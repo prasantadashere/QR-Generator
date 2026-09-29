@@ -156,6 +156,24 @@
     #qrcode-container img {
       display: block;
     }
+
+    .credits {
+      margin-top: 20px;
+      padding-top: 14px;
+      border-top: 1px solid #e5e7eb;
+      font-size: 11px;
+      line-height: 1.5;
+      color: #6b7280;
+    }
+
+    .credits a {
+      color: #0066ff;
+      text-decoration: none;
+    }
+
+    .credits a:hover {
+      text-decoration: underline;
+    }
   </style>
 </head>
 
@@ -209,21 +227,42 @@
       <div id="qrcode-container"></div>
     </div>
 
+    <div class="credits">
+      <div>
+        QR Code generated using
+        <a
+          href="https://github.com/davidshimjs/qrcodejs"
+          target="_blank"
+          rel="noopener noreferrer">
+          QRCode.js
+        </a>
+        under the MIT License.
+      </div>
+
+      <div>
+        Cat images from
+        <a
+          href="https://www.kaggle.com/datasets/vekosek/cats-from-memes"
+          target="_blank"
+          rel="noopener noreferrer">
+          Cats from Memes
+        </a>
+        by Vekosek, licensed under Apache License 2.0.
+      </div>
+    </div>
+
   </div>
 
   <script>
-
     const GITHUB_USERNAME = "prasantadashere";
     const GITHUB_REPOSITORY = "QR-Generator";
     const IMAGE_FOLDER = "meowColony";
 
     async function setRandomImage() {
-
       const imageElement =
         document.getElementById("header-image");
 
       try {
-
         const apiURL =
           `https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPOSITORY}/contents/${IMAGE_FOLDER}?per_page=1000`;
 
@@ -239,7 +278,6 @@
 
         const imageFiles =
           files.filter(file => {
-
             if (file.type !== "file") {
               return false;
             }
@@ -254,7 +292,6 @@
               name.endsWith(".webp") ||
               name.endsWith(".gif")
             );
-
           });
 
         if (imageFiles.length === 0) {
@@ -270,19 +307,13 @@
           imageFiles[randomIndex].download_url;
 
       } catch (error) {
-
         console.error(error);
-
       }
-
     }
-
 
     let qrcodeObj = null;
 
-
     function generateQRCode() {
-
       const text =
         document
           .getElementById("qr-text")
@@ -296,46 +327,33 @@
         document.getElementById("download-btn");
 
       if (!text) {
-
         alert("Please enter text or a URL!");
-
         return;
-
       }
 
       container.innerHTML = "";
 
       qrcodeObj =
-        new QRCode(
-          container,
-          {
-            text: text,
-            width: 200,
-            height: 200,
-            colorDark: "#000000",
-            colorLight: "#ffffff",
-            correctLevel: QRCode.CorrectLevel.H
-          }
-        );
+        new QRCode(container, {
+          text: text,
+          width: 200,
+          height: 200,
+          colorDark: "#000000",
+          colorLight: "#ffffff",
+          correctLevel: QRCode.CorrectLevel.H
+        });
 
       downloadBtn.disabled = false;
-
     }
 
-
     async function pasteFromClipboard() {
-
       try {
-
         const text =
           await navigator.clipboard.readText();
 
         if (!text) {
-
           alert("Clipboard is empty.");
-
           return;
-
         }
 
         const input =
@@ -346,18 +364,13 @@
         generateQRCode();
 
       } catch (error) {
-
         alert(
           "Unable to access the clipboard. Please allow clipboard permission in your browser."
         );
-
       }
-
     }
 
-
     function downloadQRCode() {
-
       const container =
         document.getElementById("qrcode-container");
 
@@ -365,11 +378,8 @@
         container.querySelector("canvas");
 
       if (!sourceCanvas) {
-
         alert("Please generate a QR code first!");
-
         return;
-
       }
 
       const borderSize = 12;
@@ -388,8 +398,7 @@
         sourceCanvas.height +
         borderSize * 2;
 
-      ctx.fillStyle =
-        "#ffffff";
+      ctx.fillStyle = "#ffffff";
 
       ctx.fillRect(
         0,
@@ -411,23 +420,15 @@
         "meow-meow-qrcode.png";
 
       link.href =
-        exportCanvas.toDataURL(
-          "image/png"
-        );
+        exportCanvas.toDataURL("image/png");
 
       link.click();
-
     }
 
-
     window.onload = function() {
-
       setRandomImage();
-
       generateQRCode();
-
     };
-
   </script>
 
 </body>
