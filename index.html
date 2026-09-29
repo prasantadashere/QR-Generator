@@ -7,7 +7,7 @@
 
   <title>Meow Meow QR Generator</title>
 
-  <!-- QRCode.js Library CDN -->
+  <!-- QRCode.js Library -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
   <style>
@@ -43,6 +43,7 @@
       border-radius: 8px;
       margin-bottom: 16px;
       display: block;
+      background-color: #e5e7eb;
     }
 
     h2 {
@@ -136,8 +137,8 @@
     <!-- Random image from meowColony -->
     <img
       id="header-image"
-      alt="Meow Meow Cat"
       class="card-header-img"
+      alt="Random Meow Image"
     >
 
     <h2>Meow Meow QR Generator</h2>
@@ -177,164 +178,322 @@
   <script>
 
     /*
-      =====================================================
-      MEOW COLONY IMAGES
-      =====================================================
+    ==========================================================
+    GITHUB CONFIGURATION
+    ==========================================================
 
-      Put your images inside:
+    CHANGE THESE TWO VALUES TO YOUR GITHUB DETAILS.
 
-      meowColony/
+    Example:
 
-      Example:
+    username = "prasanta"
+    repository = "meow-meow-qr-generator"
 
-      meowColony/
-      ├── cat1.jpeg
-      ├── cat2.jpg
-      ├── cat3.png
-      ├── cat4.jpeg
-      └── cat5.jpg
+    The folder must be:
 
-      Add ALL your filenames below.
+    meowColony/
+
+    ==========================================================
     */
 
-    const meowImages = [
-      "cat1.jpeg",
-      "cat2.jpg",
-      "cat3.png",
-      "cat4.jpeg",
-      "cat5.jpg"
-    ];
+    const GITHUB_USERNAME = "YOUR_GITHUB_USERNAME";
+
+    const GITHUB_REPOSITORY = "YOUR_REPOSITORY_NAME";
+
+    const IMAGE_FOLDER = "meowColony";
 
 
     /*
-      =====================================================
-      RANDOM IMAGE
-      =====================================================
+    ==========================================================
+    GET RANDOM IMAGE FROM GITHUB
+    ==========================================================
     */
 
-    function setRandomImage() {
+    async function setRandomImage() {
 
       const imageElement =
         document.getElementById("header-image");
 
-      // Generate random number
-      const randomIndex =
-        Math.floor(Math.random() * meowImages.length);
+      try {
 
-      // Select random image
-      const randomImage =
-        meowImages[randomIndex];
+        /*
+        GitHub API URL
 
-      // Set image path
-      imageElement.src =
-        "./meowColony/" + randomImage;
+        This asks GitHub:
+
+        "Give me all files inside meowColony"
+        */
+
+        const apiURL =
+          `https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPOSITORY}/contents/${IMAGE_FOLDER}`;
+
+
+        const response =
+          await fetch(apiURL);
+
+
+        if (!response.ok) {
+
+          throw new Error(
+            "Could not access the GitHub image folder."
+          );
+
+        }
+
+
+        const files =
+          await response.json();
+
+
+        /*
+        ======================================================
+        ONLY ALLOW IMAGE FILES
+        ======================================================
+        */
+
+        const imageFiles =
+          files.filter(file => {
+
+            if (file.type !== "file") {
+              return false;
+            }
+
+            const name =
+              file.name.toLowerCase();
+
+            return (
+              name.endsWith(".jpg") ||
+              name.endsWith(".jpeg") ||
+              name.endsWith(".png") ||
+              name.endsWith(".webp") ||
+              name.endsWith(".gif")
+            );
+
+          });
+
+
+        /*
+        Check if images exist
+        */
+
+        if (imageFiles.length === 0) {
+
+          throw new Error(
+            "No images found in meowColony."
+          );
+
+        }
+
+
+        /*
+        ======================================================
+        SELECT RANDOM IMAGE
+        ======================================================
+        */
+
+        const randomIndex =
+          Math.floor(
+            Math.random() * imageFiles.length
+          );
+
+
+        const randomFile =
+          imageFiles[randomIndex];
+
+
+        /*
+        ======================================================
+        DISPLAY IMAGE
+        ======================================================
+        */
+
+        imageElement.src =
+          randomFile.download_url;
+
+
+        console.log(
+          "Random image:",
+          randomFile.name
+        );
+
+      }
+
+      catch (error) {
+
+        console.error(
+          "Image loading error:",
+          error
+        );
+
+        /*
+        Hide broken image
+        */
+
+        imageElement.style.display = "none";
+
+      }
 
     }
 
 
     /*
-      =====================================================
-      QR CODE GENERATOR
-      =====================================================
+    ==========================================================
+    QR CODE GENERATOR
+    ==========================================================
     */
 
     let qrcodeObj = null;
 
+
     function generateQRCode() {
 
       const text =
-        document.getElementById("qr-text").value.trim();
+        document
+          .getElementById("qr-text")
+          .value
+          .trim();
+
 
       const container =
-        document.getElementById("qrcode-container");
+        document.getElementById(
+          "qrcode-container"
+        );
+
 
       const downloadBtn =
-        document.getElementById("download-btn");
+        document.getElementById(
+          "download-btn"
+        );
 
 
-      // Check if input is empty
+      /*
+      Check empty input
+      */
+
       if (!text) {
 
-        alert("Please enter text or a URL!");
+        alert(
+          "Please enter text or a URL!"
+        );
 
         return;
+
       }
 
 
-      // Remove previous QR code
+      /*
+      Remove previous QR code
+      */
+
       container.innerHTML = "";
 
 
-      // Generate new QR code
-      qrcodeObj = new QRCode(container, {
+      /*
+      Generate QR
+      */
 
-        text: text,
+      qrcodeObj =
+        new QRCode(
+          container,
+          {
 
-        width: 200,
+            text: text,
 
-        height: 200,
+            width: 200,
 
-        colorDark: "#000000",
+            height: 200,
 
-        colorLight: "#ffffff",
+            colorDark: "#000000",
 
-        correctLevel: QRCode.CorrectLevel.H
+            colorLight: "#ffffff",
 
-      });
+            correctLevel:
+              QRCode.CorrectLevel.H
+
+          }
+        );
 
 
-      // Enable download button
+      /*
+      Enable download
+      */
+
       downloadBtn.disabled = false;
 
     }
 
 
     /*
-      =====================================================
-      DOWNLOAD QR CODE
-      =====================================================
+    ==========================================================
+    DOWNLOAD QR CODE
+    ==========================================================
     */
 
     function downloadQRCode() {
 
       const container =
-        document.getElementById("qrcode-container");
+        document.getElementById(
+          "qrcode-container"
+        );
+
 
       const sourceCanvas =
-        container.querySelector("canvas");
+        container.querySelector(
+          "canvas"
+        );
 
 
-      // If QR code does not exist
       if (!sourceCanvas) {
 
-        alert("Please generate a QR code first!");
+        alert(
+          "Please generate a QR code first!"
+        );
 
         return;
+
       }
 
 
-      // White border around QR
+      /*
+      White border
+      */
+
       const borderSize = 12;
 
 
-      // Create export canvas
       const exportCanvas =
-        document.createElement("canvas");
+        document.createElement(
+          "canvas"
+        );
+
 
       const ctx =
-        exportCanvas.getContext("2d");
+        exportCanvas.getContext(
+          "2d"
+        );
 
 
-      // Set canvas dimensions
+      /*
+      Set size
+      */
+
       exportCanvas.width =
-        sourceCanvas.width + (borderSize * 2);
+        sourceCanvas.width +
+        (borderSize * 2);
+
 
       exportCanvas.height =
-        sourceCanvas.height + (borderSize * 2);
+        sourceCanvas.height +
+        (borderSize * 2);
 
 
-      // White background
-      ctx.fillStyle = "#ffffff";
+      /*
+      White background
+      */
+
+      ctx.fillStyle =
+        "#ffffff";
+
 
       ctx.fillRect(
         0,
@@ -344,7 +503,10 @@
       );
 
 
-      // Draw QR code
+      /*
+      Draw QR
+      */
+
       ctx.drawImage(
         sourceCanvas,
         borderSize,
@@ -352,9 +514,14 @@
       );
 
 
-      // Create download link
+      /*
+      Download
+      */
+
       const link =
-        document.createElement("a");
+        document.createElement(
+          "a"
+        );
 
 
       link.download =
@@ -362,27 +529,35 @@
 
 
       link.href =
-        exportCanvas.toDataURL("image/png");
+        exportCanvas.toDataURL(
+          "image/png"
+        );
 
 
-      // Start download
       link.click();
 
     }
 
 
     /*
-      =====================================================
-      PAGE LOAD
-      =====================================================
+    ==========================================================
+    PAGE LOAD
+    ==========================================================
     */
 
-    window.onload = function () {
+    window.onload = function() {
 
-      // Pick random cat image
+      /*
+      Random cat
+      */
+
       setRandomImage();
 
-      // Generate default QR code
+
+      /*
+      Default QR
+      */
+
       generateQRCode();
 
     };
@@ -393,44 +568,58 @@
 </html>
 ```
 
-### Folder structure
+### You only need to change 2 lines
 
-Make sure your GitHub repository looks like this:
+Find:
+
+```javascript
+const GITHUB_USERNAME = "YOUR_GITHUB_USERNAME";
+const GITHUB_REPOSITORY = "YOUR_REPOSITORY_NAME";
+```
+
+For example, if your GitHub URL is:
 
 ```text
-your-repository/
+https://github.com/prasanta123/meow-meow-qr-generator
+```
+
+use:
+
+```javascript
+const GITHUB_USERNAME = "prasanta123";
+const GITHUB_REPOSITORY = "meow-meow-qr-generator";
+```
+
+Your repository should then look like:
+
+```text
+meow-meow-qr-generator/
 │
 ├── index.html
 │
 └── meowColony/
-    ├── cat1.jpeg
-    ├── cat2.jpg
-    ├── cat3.png
-    ├── cat4.jpeg
-    └── cat5.jpg
+    ├── random-name-1.jpg
+    ├── IMG_8293.jpeg
+    ├── cat_XY72.png
+    ├── meow_123.webp
+    ├── DSC_9283.jpg
+    └── ... ~1000 images
 ```
 
-**Important:** The names in `meowImages` must exactly match the actual filenames, including `.jpg`, `.jpeg`, `.png`, and capitalization.
+You **do not need to know any of the image names**.
 
-For example, if your folder actually contains:
+On every refresh:
 
 ```text
-meowColony/
-├── meow.jpeg
-├── meow2.jpeg
-├── cute-cat.png
-└── sleeping.jpg
+Page loads
+     ↓
+GitHub API gets meowColony files
+     ↓
+Filters image files
+     ↓
+Chooses random image
+     ↓
+Displays it
 ```
 
-change the array to:
-
-```javascript
-const meowImages = [
-  "meow.jpeg",
-  "meow2.jpeg",
-  "cute-cat.png",
-  "sleeping.jpg"
-];
-```
-
-Then commit/push the changes to GitHub. Vercel will automatically redeploy the updated site.
+**One thing to be aware of:** GitHub's API has a limit on how many directory entries it returns in one request. With ~1,000 images, this approach may not retrieve all of them in a single call. If you want **all 1,000 images reliably**, I can give you a better version that avoids the GitHub API and works cleanly with Vercel.
