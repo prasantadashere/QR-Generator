@@ -1,11 +1,15 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <title>Meow Meow QR Generator</title>
+
   <!-- QRCode.js Library CDN -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
   <style>
     * {
       box-sizing: border-box;
@@ -32,13 +36,13 @@
       text-align: center;
     }
 
-    /* Style for the local image placed above the heading */
     .card-header-img {
       width: 100%;
-      height: 100%;
+      height: 180px;
       object-fit: cover;
       border-radius: 8px;
       margin-bottom: 16px;
+      display: block;
     }
 
     h2 {
@@ -110,94 +114,323 @@
       display: inline-block;
     }
 
-    /* White border container around QR code */
     #qrcode-container {
       background-color: #ffffff;
-      padding: 8px; /* White border width */
+      padding: 8px;
       border-radius: 4px;
       display: inline-block;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
     }
 
-    #qrcode-container canvas, 
+    #qrcode-container canvas,
     #qrcode-container img {
       display: block;
     }
   </style>
 </head>
+
 <body>
 
   <div class="card">
-    <!-- Local image placed above the header text -->
-    <!-- Make sure your image file in the folder is named image.jpg (or update the filename in src) -->
-    <img src="./image.jpeg" alt="Header Image" class="card-header-img">
+
+    <!-- Random image from meowColony -->
+    <img
+      id="header-image"
+      alt="Meow Meow Cat"
+      class="card-header-img"
+    >
 
     <h2>Meow Meow QR Generator</h2>
-    
-    <input type="text" id="qr-text" placeholder="Enter URL or Text" value="https://example.com">
-    
+
+    <input
+      type="text"
+      id="qr-text"
+      placeholder="Enter URL or Text"
+      value="https://example.com"
+    >
+
     <div class="btn-group">
-      <button class="btn-generate" onclick="generateQRCode()">Generate</button>
-      <button class="btn-download" id="download-btn" onclick="downloadQRCode()" disabled>Download</button>
+
+      <button
+        class="btn-generate"
+        onclick="generateQRCode()">
+        Generate
+      </button>
+
+      <button
+        class="btn-download"
+        id="download-btn"
+        onclick="downloadQRCode()"
+        disabled>
+        Download
+      </button>
+
     </div>
 
     <div class="qr-preview-wrapper">
       <div id="qrcode-container"></div>
     </div>
+
   </div>
 
+
   <script>
+
+    /*
+      =====================================================
+      MEOW COLONY IMAGES
+      =====================================================
+
+      Put your images inside:
+
+      meowColony/
+
+      Example:
+
+      meowColony/
+      ├── cat1.jpeg
+      ├── cat2.jpg
+      ├── cat3.png
+      ├── cat4.jpeg
+      └── cat5.jpg
+
+      Add ALL your filenames below.
+    */
+
+    const meowImages = [
+      "cat1.jpeg",
+      "cat2.jpg",
+      "cat3.png",
+      "cat4.jpeg",
+      "cat5.jpg"
+    ];
+
+
+    /*
+      =====================================================
+      RANDOM IMAGE
+      =====================================================
+    */
+
+    function setRandomImage() {
+
+      const imageElement =
+        document.getElementById("header-image");
+
+      // Generate random number
+      const randomIndex =
+        Math.floor(Math.random() * meowImages.length);
+
+      // Select random image
+      const randomImage =
+        meowImages[randomIndex];
+
+      // Set image path
+      imageElement.src =
+        "./meowColony/" + randomImage;
+
+    }
+
+
+    /*
+      =====================================================
+      QR CODE GENERATOR
+      =====================================================
+    */
+
     let qrcodeObj = null;
 
     function generateQRCode() {
-      const text = document.getElementById("qr-text").value.trim();
-      const container = document.getElementById("qrcode-container");
-      const downloadBtn = document.getElementById("download-btn");
 
+      const text =
+        document.getElementById("qr-text").value.trim();
+
+      const container =
+        document.getElementById("qrcode-container");
+
+      const downloadBtn =
+        document.getElementById("download-btn");
+
+
+      // Check if input is empty
       if (!text) {
+
         alert("Please enter text or a URL!");
+
         return;
       }
 
+
+      // Remove previous QR code
       container.innerHTML = "";
 
+
+      // Generate new QR code
       qrcodeObj = new QRCode(container, {
+
         text: text,
+
         width: 200,
+
         height: 200,
+
         colorDark: "#000000",
+
         colorLight: "#ffffff",
+
         correctLevel: QRCode.CorrectLevel.H
+
       });
 
+
+      // Enable download button
       downloadBtn.disabled = false;
+
     }
+
+
+    /*
+      =====================================================
+      DOWNLOAD QR CODE
+      =====================================================
+    */
 
     function downloadQRCode() {
-      const container = document.getElementById("qrcode-container");
-      const sourceCanvas = container.querySelector("canvas");
 
-      if (!sourceCanvas) return;
+      const container =
+        document.getElementById("qrcode-container");
 
-      const borderSize = 12; 
-      const exportCanvas = document.createElement("canvas");
-      const ctx = exportCanvas.getContext("2d");
+      const sourceCanvas =
+        container.querySelector("canvas");
 
-      exportCanvas.width = sourceCanvas.width + (borderSize * 2);
-      exportCanvas.height = sourceCanvas.height + (borderSize * 2);
 
+      // If QR code does not exist
+      if (!sourceCanvas) {
+
+        alert("Please generate a QR code first!");
+
+        return;
+      }
+
+
+      // White border around QR
+      const borderSize = 12;
+
+
+      // Create export canvas
+      const exportCanvas =
+        document.createElement("canvas");
+
+      const ctx =
+        exportCanvas.getContext("2d");
+
+
+      // Set canvas dimensions
+      exportCanvas.width =
+        sourceCanvas.width + (borderSize * 2);
+
+      exportCanvas.height =
+        sourceCanvas.height + (borderSize * 2);
+
+
+      // White background
       ctx.fillStyle = "#ffffff";
-      ctx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
-      ctx.drawImage(sourceCanvas, borderSize, borderSize);
 
-      const link = document.createElement("a");
-      link.download = "qrcode-with-border.png";
-      link.href = exportCanvas.toDataURL("image/png");
+      ctx.fillRect(
+        0,
+        0,
+        exportCanvas.width,
+        exportCanvas.height
+      );
+
+
+      // Draw QR code
+      ctx.drawImage(
+        sourceCanvas,
+        borderSize,
+        borderSize
+      );
+
+
+      // Create download link
+      const link =
+        document.createElement("a");
+
+
+      link.download =
+        "meow-meow-qrcode.png";
+
+
+      link.href =
+        exportCanvas.toDataURL("image/png");
+
+
+      // Start download
       link.click();
+
     }
 
-    window.onload = generateQRCode;
+
+    /*
+      =====================================================
+      PAGE LOAD
+      =====================================================
+    */
+
+    window.onload = function () {
+
+      // Pick random cat image
+      setRandomImage();
+
+      // Generate default QR code
+      generateQRCode();
+
+    };
+
   </script>
 
 </body>
 </html>
+```
+
+### Folder structure
+
+Make sure your GitHub repository looks like this:
+
+```text
+your-repository/
+│
+├── index.html
+│
+└── meowColony/
+    ├── cat1.jpeg
+    ├── cat2.jpg
+    ├── cat3.png
+    ├── cat4.jpeg
+    └── cat5.jpg
+```
+
+**Important:** The names in `meowImages` must exactly match the actual filenames, including `.jpg`, `.jpeg`, `.png`, and capitalization.
+
+For example, if your folder actually contains:
+
+```text
+meowColony/
+├── meow.jpeg
+├── meow2.jpeg
+├── cute-cat.png
+└── sleeping.jpg
+```
+
+change the array to:
+
+```javascript
+const meowImages = [
+  "meow.jpeg",
+  "meow2.jpeg",
+  "cute-cat.png",
+  "sleeping.jpg"
+];
+```
+
+Then commit/push the changes to GitHub. Vercel will automatically redeploy the updated site.
