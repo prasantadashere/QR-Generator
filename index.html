@@ -50,18 +50,50 @@
       font-size: 1.25rem;
     }
 
-    input[type="text"] {
+    .input-group {
+      display: flex;
+      gap: 8px;
       width: 100%;
+      margin-bottom: 16px;
+    }
+
+    input[type="text"] {
+      flex: 1;
+      min-width: 0;
       padding: 10px 12px;
       border: 1px solid #cccccc;
       border-radius: 6px;
       font-size: 14px;
-      margin-bottom: 16px;
       outline: none;
     }
 
     input[type="text"]:focus {
       border-color: #0066ff;
+    }
+
+    .paste-btn {
+      width: 44px;
+      height: 44px;
+      flex: 0 0 44px;
+      padding: 0;
+      border: 1px solid #cccccc;
+      border-radius: 6px;
+      background-color: #f8fafc;
+      color: #333333;
+      font-size: 20px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+    }
+
+    .paste-btn:hover {
+      background-color: #e5e7eb;
+    }
+
+    .paste-btn:active {
+      transform: scale(0.96);
     }
 
     .btn-group {
@@ -139,14 +171,24 @@
 
     <h2>Meow Meow QR Generator</h2>
 
-    <input
-      type="text"
-      id="qr-text"
-      placeholder="Enter URL or Text"
-      value="https://example.com"
-    >
+    <div class="input-group">
+      <input
+        type="text"
+        id="qr-text"
+        placeholder="Enter URL or Text"
+        value="https://example.com"
+      >
+
+      <button
+        class="paste-btn"
+        onclick="pasteFromClipboard()"
+        title="Paste from clipboard">
+        📋
+      </button>
+    </div>
 
     <div class="btn-group">
+
       <button
         class="btn-generate"
         onclick="generateQRCode()">
@@ -160,6 +202,7 @@
         disabled>
         Download
       </button>
+
     </div>
 
     <div class="qr-preview-wrapper">
@@ -169,61 +212,82 @@
   </div>
 
   <script>
+
     const GITHUB_USERNAME = "prasantadashere";
     const GITHUB_REPOSITORY = "QR-Generator";
     const IMAGE_FOLDER = "meowColony";
 
     async function setRandomImage() {
-      const imageElement = document.getElementById("header-image");
+
+      const imageElement =
+        document.getElementById("header-image");
 
       try {
+
         const apiURL =
           `https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPOSITORY}/contents/${IMAGE_FOLDER}?per_page=1000`;
 
-        const response = await fetch(apiURL);
+        const response =
+          await fetch(apiURL);
 
         if (!response.ok) {
           throw new Error("Unable to load images.");
         }
 
-        const files = await response.json();
+        const files =
+          await response.json();
 
-        const imageFiles = files.filter(file => {
-          if (file.type !== "file") {
-            return false;
-          }
+        const imageFiles =
+          files.filter(file => {
 
-          const name = file.name.toLowerCase();
+            if (file.type !== "file") {
+              return false;
+            }
 
-          return (
-            name.endsWith(".jpg") ||
-            name.endsWith(".jpeg") ||
-            name.endsWith(".png") ||
-            name.endsWith(".webp") ||
-            name.endsWith(".gif")
-          );
-        });
+            const name =
+              file.name.toLowerCase();
+
+            return (
+              name.endsWith(".jpg") ||
+              name.endsWith(".jpeg") ||
+              name.endsWith(".png") ||
+              name.endsWith(".webp") ||
+              name.endsWith(".gif")
+            );
+
+          });
 
         if (imageFiles.length === 0) {
           throw new Error("No images found.");
         }
 
         const randomIndex =
-          Math.floor(Math.random() * imageFiles.length);
+          Math.floor(
+            Math.random() * imageFiles.length
+          );
 
         imageElement.src =
           imageFiles[randomIndex].download_url;
 
       } catch (error) {
+
         console.error(error);
+
       }
+
     }
+
 
     let qrcodeObj = null;
 
+
     function generateQRCode() {
+
       const text =
-        document.getElementById("qr-text").value.trim();
+        document
+          .getElementById("qr-text")
+          .value
+          .trim();
 
       const container =
         document.getElementById("qrcode-container");
@@ -232,25 +296,68 @@
         document.getElementById("download-btn");
 
       if (!text) {
+
         alert("Please enter text or a URL!");
+
         return;
+
       }
 
       container.innerHTML = "";
 
-      qrcodeObj = new QRCode(container, {
-        text: text,
-        width: 200,
-        height: 200,
-        colorDark: "#000000",
-        colorLight: "#ffffff",
-        correctLevel: QRCode.CorrectLevel.H
-      });
+      qrcodeObj =
+        new QRCode(
+          container,
+          {
+            text: text,
+            width: 200,
+            height: 200,
+            colorDark: "#000000",
+            colorLight: "#ffffff",
+            correctLevel: QRCode.CorrectLevel.H
+          }
+        );
 
       downloadBtn.disabled = false;
+
     }
 
+
+    async function pasteFromClipboard() {
+
+      try {
+
+        const text =
+          await navigator.clipboard.readText();
+
+        if (!text) {
+
+          alert("Clipboard is empty.");
+
+          return;
+
+        }
+
+        const input =
+          document.getElementById("qr-text");
+
+        input.value = text;
+
+        generateQRCode();
+
+      } catch (error) {
+
+        alert(
+          "Unable to access the clipboard. Please allow clipboard permission in your browser."
+        );
+
+      }
+
+    }
+
+
     function downloadQRCode() {
+
       const container =
         document.getElementById("qrcode-container");
 
@@ -258,8 +365,11 @@
         container.querySelector("canvas");
 
       if (!sourceCanvas) {
+
         alert("Please generate a QR code first!");
+
         return;
+
       }
 
       const borderSize = 12;
@@ -271,12 +381,15 @@
         exportCanvas.getContext("2d");
 
       exportCanvas.width =
-        sourceCanvas.width + borderSize * 2;
+        sourceCanvas.width +
+        borderSize * 2;
 
       exportCanvas.height =
-        sourceCanvas.height + borderSize * 2;
+        sourceCanvas.height +
+        borderSize * 2;
 
-      ctx.fillStyle = "#ffffff";
+      ctx.fillStyle =
+        "#ffffff";
 
       ctx.fillRect(
         0,
@@ -294,18 +407,27 @@
       const link =
         document.createElement("a");
 
-      link.download = "meow-meow-qrcode.png";
+      link.download =
+        "meow-meow-qrcode.png";
 
       link.href =
-        exportCanvas.toDataURL("image/png");
+        exportCanvas.toDataURL(
+          "image/png"
+        );
 
       link.click();
+
     }
 
+
     window.onload = function() {
+
       setRandomImage();
+
       generateQRCode();
+
     };
+
   </script>
 
 </body>
